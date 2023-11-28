@@ -5,7 +5,11 @@ __pycache__/
 
 # C extensions
 *.so
-
+app/app.db
+migrations/README
+migrations/alembic.ini
+migrations/env.py
+migrations/script.py.mako
 # Distribution / packaging
 .Python
 build/
