@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, send_file
 from app import app, db
 from app.models import Entry
 
@@ -29,9 +29,9 @@ def add():
     if request.method == 'POST':
         form = request.form
         title = form.get('title')
-        description = form.get('description')
-        if not title or description:
-            entry = Entry(title = title, description = description)
+        url = form.get('url')
+        if not title or url:
+            entry = Entry(title = title, url = url)
             db.session.add(entry)
             db.session.commit()
             return redirect('/')
@@ -54,9 +54,9 @@ def update(id):
         if entry:
             form = request.form
             title = form.get('title')
-            description = form.get('description')
+            url = form.get('url')
             entry.title = title
-            entry.description = description
+            entry.url = url
             db.session.commit()
         return redirect('/')
 
@@ -89,3 +89,28 @@ def turn(id):
 # @app.errorhandler(Exception)
 # def error_page(e):
 #     return "of the jedi"
+
+import zipfile
+import io
+import pathlib
+
+
+
+
+@app.route('/download-zip/<int:id>')
+def request_zip(id):
+    if not id or id != 0:
+        base_path = pathlib.Path('./data/')
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, mode='w') as z:
+            for f_name in base_path.iterdir():
+                # if file start with id then add to zip
+                if f_name.name.startswith(str(id)):
+                    z.write(f_name)
+        data.seek(0)
+        return send_file(
+            data,
+            mimetype='application/zip',
+            as_attachment=True,
+            attachment_filename='data.zip'
+    )
